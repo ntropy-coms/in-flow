@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Use service-role or anon key server-side (anon key is fine for upsert with RLS disabled)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getSupabase } from '@/lib/supabase';
 
 // ── GET: Meta webhook verification handshake ─────────────────────────────────
 export async function GET(request: NextRequest) {
@@ -41,6 +35,8 @@ export async function POST(request: NextRequest) {
     const text: string = message.text?.body ?? '';
     const contactName: string =
       value?.contacts?.[0]?.profile?.name ?? from;
+
+    const supabase = getSupabase();
 
     // Upsert chat profile
     await supabase.from('chats').upsert(
