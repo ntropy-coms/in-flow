@@ -76,7 +76,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden md:flex-row flex-col">
+      <div className="flex flex-1 min-h-0 overflow-hidden md:flex-row flex-col pt-12 pb-12 md:pt-0 md:pb-0">
         {/* Column 1 – Chat List */}
         <div className={`${panel === 'chats' ? 'flex' : 'hidden'} min-h-0 md:flex md:w-1/4 md:min-w-[240px] md:flex-col border-r border-[#2a2a3a]`}>
           <ChatList
