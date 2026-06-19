@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import BusinessOnboarding from '@/components/BusinessOnboarding';
+import Auth from '@/components/Auth';
 import ChatList from '@/components/ChatList';
 import ChatWindow from '@/components/ChatWindow';
 import PluginContainer from '@/components/PluginContainer';
@@ -11,6 +12,8 @@ export default function Home() {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     async function loadBusiness() {
@@ -23,12 +26,28 @@ export default function Home() {
     loadBusiness();
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+      setIsAuthenticated(!!data.session);
+      setSessionLoading(false);
+      supabase.auth.onAuthStateChange((_event, sess) => {
+        setIsAuthenticated(!!sess?.access_token);
+      });
+    }
+    checkSession();
+  }, []);
+
+  if (loading || sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#09090f] text-[#9090a8]">
         Loading business profile...
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return <Auth onSignedIn={() => setIsAuthenticated(true)} />;
   }
 
   if (!business) {
@@ -46,6 +65,7 @@ export default function Home() {
           <span className="text-white font-semibold tracking-wide text-sm">
             in<span className="text-[#6c63ff]">Flow</span>
           </span>
+          <span className="ml-4 text-sm text-[#e8e8f0] truncate">{business.business_name}</span>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -67,7 +87,7 @@ export default function Home() {
 
         {/* Column 3 – Plugin Container (1/4) */}
         <div className="w-1/4 min-w-[280px] flex flex-col">
-          <PluginContainer activeChat={activeChat} />
+          <PluginContainer activeChat={activeChat} business={business} onBusinessUpdate={setBusiness} />
         </div>
       </div>
     </div>

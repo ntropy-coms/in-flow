@@ -15,17 +15,39 @@ const CATEGORY_OPTIONS = [
 ] as const;
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneDigitsRegex = /^\+\d{8,15}$/;
+
+function normalizeWhatsAppNumber(value: string) {
+  const cleaned = value.replace(/[^\d+]/g, '');
+  const digitsOnly = cleaned.replace(/\D/g, '');
+  if (!digitsOnly) return '';
+  return `+${digitsOnly}`;
+}
+
+function formatWhatsAppNumber(value: string) {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+
+  if (digits.length <= 3) {
+    return `+${digits}`;
+  }
+
+  const country = digits.slice(0, 3);
+  const rest = digits.slice(3);
+  const groups = rest.match(/.{1,3}/g) ?? [];
+  return `+${country} ${groups.join(' ')}`;
+}
 
 interface BusinessOnboardingProps {
   onCompleted: (business: Business) => void;
 }
 
 export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingProps) {
-  const [step, setStep] = useState<1 | 2>(1);
   const [businessName, setBusinessName] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
+  // onboarding no longer requires linking WhatsApp — that's done from dashboard
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -68,17 +90,7 @@ export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingPr
   }
 
   async function handleCreateAccount() {
-    if (!validateStepOne()) {
-      return;
-    }
-    setStep(2);
-  }
-
-  async function handleConnectWhatsApp() {
-    if (!whatsappNumber.trim()) {
-      setError('WhatsApp business number is required.');
-      return;
-    }
+    if (!validateStepOne()) return;
 
     setSaving(true);
     setError('');
@@ -91,7 +103,6 @@ export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingPr
           categories: selectedCategories,
           address: address.trim(),
           email: email.trim(),
-          whatsapp_number: whatsappNumber.trim(),
         },
       ])
       .select()
@@ -101,11 +112,20 @@ export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingPr
 
     if (insertError || !data) {
       console.error('[BusinessOnboarding] insert error', insertError);
-      setError('Unable to create your account right now. Please try again.');
+      if (
+        insertError?.code === 'PGRST205' ||
+        insertError?.message?.toLowerCase().includes('could not find')
+      ) {
+        setError(
+          'Database table not found. Please create the businesses table in Supabase before continuing.'
+        );
+      } else {
+        setError('Unable to create your account right now. Please try again.');
+      }
       return;
     }
 
-    onCompleted(data as any);
+    onCompleted(data as Business);
   }
 
   return (
@@ -119,8 +139,7 @@ export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingPr
           </p>
         </div>
 
-        {step === 1 ? (
-          <div className="space-y-6">
+        <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm text-[#e8e8f0]">
                 <span>Business name</span>
@@ -187,51 +206,10 @@ export default function BusinessOnboarding({ onCompleted }: BusinessOnboardingPr
                 disabled={saving}
                 className="rounded-2xl bg-[#6c63ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7c73ff] disabled:opacity-50"
               >
-                Continue to WhatsApp setup
+                Finish setup
               </button>
             </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-white">Connect your WhatsApp Business number</p>
-              <p className="text-sm text-[#9090a8]">
-                Enter the WhatsApp Business phone number that will receive customer messages. This links your account to the messaging channel.
-              </p>
-            </div>
-
-            <label className="space-y-2 text-sm text-[#e8e8f0]">
-              <span>WhatsApp Business number</span>
-              <input
-                type="tel"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="e.g. +1234567890"
-                className="w-full rounded-2xl border border-[#2a2a3a] bg-[#15151d] px-4 py-3 text-sm text-white outline-none focus:border-[#6c63ff]"
-              />
-            </label>
-
-            {error && <p className="text-sm text-[#ff6b6b]">{error}</p>}
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="rounded-2xl border border-[#2a2a3a] px-5 py-3 text-sm text-white transition hover:border-[#6c63ff]"
-              >
-                Back to business details
-              </button>
-              <button
-                type="button"
-                onClick={handleConnectWhatsApp}
-                disabled={saving}
-                className="rounded-2xl bg-[#6c63ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#7c73ff] disabled:opacity-50"
-              >
-                Link WhatsApp number
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

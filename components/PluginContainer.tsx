@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { FileText, CalendarCheck, Calculator, ShoppingBag, MapPin } from 'lucide-react';
-import { Chat } from '@/lib/supabase';
+import { Chat, Business } from '@/lib/supabase';
 import FastInvoice from '@/components/plugins/FastInvoice';
 import BookedIt from '@/components/plugins/BookedIt';
 import QuoteCraft from '@/components/plugins/QuoteCraft';
 import MenuDrop from '@/components/plugins/MenuDrop';
 import PinTracker from '@/components/plugins/PinTracker';
+import BusinessSettings from '@/components/BusinessSettings';
 
 interface PluginContainerProps {
   activeChat: Chat | null;
+  business?: Business | null;
+  onBusinessUpdate?: (b: Business) => void;
 }
 
 const TABS = [
@@ -19,11 +22,12 @@ const TABS = [
   { id: 'quote', icon: Calculator, label: 'Quote' },
   { id: 'menu', icon: ShoppingBag, label: 'Menu' },
   { id: 'pin', icon: MapPin, label: 'Pin' },
+  { id: 'settings', icon: MapPin, label: 'Settings' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
 
-export default function PluginContainer({ activeChat }: PluginContainerProps) {
+export default function PluginContainer({ activeChat, business, onBusinessUpdate }: PluginContainerProps) {
   const [activeTab, setActiveTab] = useState<TabId>('invoice');
 
   function renderPlugin() {
@@ -38,6 +42,16 @@ export default function PluginContainer({ activeChat }: PluginContainerProps) {
         return <MenuDrop activeChat={activeChat} />;
       case 'pin':
         return <PinTracker activeChat={activeChat} />;
+      case 'settings':
+        return (
+          <div>
+            {business ? (
+              <BusinessSettings business={business} onUpdated={(b) => onBusinessUpdate?.(b)} />
+            ) : (
+              <div className="text-sm text-[#9090a8]">No business profile found.</div>
+            )}
+          </div>
+        );
     }
   }
 
