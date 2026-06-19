@@ -8,6 +8,18 @@ create table chats (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 1.1 Create Businesses Table
+create table businesses (
+  id uuid default gen_random_uuid() primary key,
+  business_name text not null,
+  categories text[] not null,
+  address text not null,
+  email text not null,
+  whatsapp_number text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- 2. Create Messages Table
 create table messages (
   id uuid default gen_random_uuid() primary key,

@@ -1,13 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import BusinessOnboarding from '@/components/BusinessOnboarding';
 import ChatList from '@/components/ChatList';
 import ChatWindow from '@/components/ChatWindow';
 import PluginContainer from '@/components/PluginContainer';
-import { Chat } from '@/lib/supabase';
+import { supabase, Chat, Business } from '@/lib/supabase';
 
 export default function Home() {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBusiness() {
+      const { data } = await supabase.from('businesses').select('*').limit(1).single();
+      if (data) {
+        setBusiness(data as Business);
+      }
+      setLoading(false);
+    }
+    loadBusiness();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#09090f] text-[#9090a8]">
+        Loading business profile...
+      </div>
+    );
+  }
+
+  if (!business) {
+    return <BusinessOnboarding onCompleted={(newBusiness) => setBusiness(newBusiness)} />;
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#0a0a0f]">
