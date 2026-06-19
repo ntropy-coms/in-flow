@@ -67,7 +67,7 @@ export default function Home() {
             <p className="text-xs sm:text-sm font-semibold text-white tracking-wide truncate">
               in<span className="text-[#6c63ff]">Flow</span>
             </p>
-            <p className="text-[11px] text-[#9090a8] truncate hidden sm:block">{business.business_name}</p>
+            <p className="text-[11px] text-[#9090a8] truncate block">{business.business_name}</p>
           </div>
         </div>
         <div className="hidden md:flex items-center gap-2">
@@ -78,7 +78,7 @@ export default function Home() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden md:flex-row flex-col pt-12 pb-12 md:pt-0 md:pb-0">
         {/* Column 1 – Chat List */}
-        <div className={`${panel === 'chats' ? 'flex' : 'hidden'} min-h-0 md:flex md:w-1/4 md:min-w-[240px] md:flex-col border-r border-[#2a2a3a]`}>
+        <div className={`${panel === 'chats' ? 'flex' : 'hidden'} min-h-0 md:flex md:w-1/4 md:min-w-[240px] md:flex-col md:border-r md:border-[#2a2a3a]`}>
           <ChatList
             activeChat={activeChat}
             onSelectChat={(chat) => {
@@ -89,7 +89,7 @@ export default function Home() {
         </div>
 
         {/* Column 2 – Chat Window */}
-        <div className={`${panel === 'chat' ? 'flex' : 'hidden'} flex-1 min-h-0 flex-col border-r border-[#2a2a3a] md:w-2/4 md:border-r`}> 
+        <div className={`${panel === 'chat' ? 'flex' : 'hidden'} w-full flex-1 min-h-0 flex-col md:w-2/4 md:border-r md:border-[#2a2a3a]`}> 
           <ChatWindow activeChat={activeChat} />
         </div>
 
