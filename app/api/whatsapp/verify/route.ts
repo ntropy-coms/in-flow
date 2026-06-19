@@ -74,7 +74,10 @@ export async function POST(request: Request) {
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch((e) => ({ error: 'invalid-json-response', raw: String(e) }));
+
+    // Log Meta response for debugging
+    console.error('[whatsapp/verify] meta response status=', res.status, 'body=', data);
 
     if (!res.ok) {
       return NextResponse.json({ error: 'Failed to send verification message', details: data }, { status: 502 });

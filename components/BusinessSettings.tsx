@@ -20,6 +20,7 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [apiErrorDetails, setApiErrorDetails] = useState<string | null>(null);
   const [codeInput, setCodeInput] = useState('');
   const [confirming, setConfirming] = useState(false);
 
@@ -66,12 +67,15 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
       const json = await res.json();
       if (!res.ok) {
         setError(json?.error || 'Verification failed');
+        setApiErrorDetails(json?.details ? JSON.stringify(json.details, null, 2) : null);
       } else {
         setSuccess('Verification message sent — check the number for a code.');
+        setApiErrorDetails(null);
       }
     } catch (e) {
       console.error(e);
       setError('Verification request failed.');
+      setApiErrorDetails(String(e));
     } finally {
       setVerifying(false);
     }
@@ -129,6 +133,11 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
           <button onClick={handleConfirm} disabled={confirming} className="rounded-2xl bg-[#4ade80] px-4 py-2 text-black">Confirm code</button>
         </div>
       </div>
+      {apiErrorDetails && (
+        <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-[#0b0b0f] p-3 text-xs text-[#ffb4b4]">
+          {apiErrorDetails}
+        </pre>
+      )}
     </div>
   );
 }

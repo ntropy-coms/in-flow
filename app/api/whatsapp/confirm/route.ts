@@ -28,8 +28,9 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${serviceKey}`,
       },
     });
-    const rows = await res.json();
+    const rows = await res.json().catch((e) => ({ error: 'invalid-json-response', raw: String(e) }));
     if (!res.ok) {
+      console.error('[whatsapp/confirm] query error status=', res.status, 'body=', rows);
       return NextResponse.json({ error: 'Failed to query verification codes', details: rows }, { status: 502 });
     }
 
@@ -49,9 +50,9 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({ verified: true }),
     });
-    const updateJson = await updateRes.json();
-
+    const updateJson = await updateRes.json().catch((e) => ({ error: 'invalid-json-response', raw: String(e) }));
     if (!updateRes.ok) {
+      console.error('[whatsapp/confirm] update verification_codes failed status=', updateRes.status, 'body=', updateJson);
       return NextResponse.json({ error: 'Failed to mark code verified', details: updateJson }, { status: 502 });
     }
 
@@ -65,8 +66,9 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({ whatsapp_verified: true, updated_at: new Date().toISOString() }),
     });
-    const bizJson = await bizRes.json();
+    const bizJson = await bizRes.json().catch((e) => ({ error: 'invalid-json-response', raw: String(e) }));
     if (!bizRes.ok) {
+      console.error('[whatsapp/confirm] update business failed status=', bizRes.status, 'body=', bizJson);
       return NextResponse.json({ error: 'Failed to update business', details: bizJson }, { status: 502 });
     }
 
