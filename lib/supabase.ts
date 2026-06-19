@@ -38,8 +38,11 @@ export type Business = {
   categories: string[];
   address: string;
   email: string;
-  whatsapp_number?: string;
+  whatsapp_number?: string | null;
   whatsapp_verified?: boolean;
+  whatsapp_waba_id?: string | null;
+  whatsapp_phone_number_id?: string | null;
+  whatsapp_access_token?: string | null;
   created_at: string;
   updated_at: string;
 };
