@@ -15,6 +15,9 @@ declare global {
   }
 }
 
+// Configuration ID from Meta App Dashboard -> Facebook Login for Business -> Configurations
+const META_CONFIG_ID = '2301977283876651';
+
 export default function BusinessSettings({ business, onUpdated }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,25 +40,53 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
       js.src = 'https://connect.facebook.net/en_US/sdk.js';
       document.body.appendChild(js);
     }
+
+    // Embedded Signup posts WABA/phone details here via window.postMessage
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.origin.endsWith('facebook.com')) return;
+
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type !== 'WA_EMBEDDED_SIGNUP') return;
+
+        if (data.event === 'FINISH') {
+          const { phone_number_id, waba_id } = data.data || {};
+          if (phone_number_id && waba_id) {
+            // Stash for use once FB.login's callback fires with the auth code
+            window.sessionStorage.setItem(
+              'wa_embedded_signup',
+              JSON.stringify({ phone_number_id, waba_id })
+            );
+          }
+        } else if (data.event === 'CANCEL' || data.event === 'ERROR') {
+          console.warn('WhatsApp Embedded Signup did not complete:', data);
+        }
+      } catch (e) {
+        // Not a JSON message we care about — ignore
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const handleEmbeddedSignup = () => {
     setError('');
     setSuccess('');
     setLoading(true);
+
     if (!window.FB) {
       setError('Facebook SDK failed to load. Please refresh the page.');
       setLoading(false);
       return;
     }
 
-    // Timeout in case the FB dialog is blocked or the callback never fires
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
       setLoading(false);
       setError('Login timed out — the auth dialog may be blocked by your browser. Please allow popups and try again.');
-    }, 20000);
+    }, 30000);
 
     try {
       window.FB.login(
@@ -63,15 +94,26 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
           clearTimeout(timer);
           if (timedOut) return;
 
-          if (response?.authResponse) {
-            const accessToken = response.authResponse.accessToken;
+          if (response?.authResponse?.code) {
+            const authCode = response.authResponse.code;
+
+            // Pull the WABA/phone details captured by the postMessage listener
+            let signupMeta: { phone_number_id?: string; waba_id?: string } = {};
+            try {
+              const raw = window.sessionStorage.getItem('wa_embedded_signup');
+              if (raw) signupMeta = JSON.parse(raw);
+            } catch (e) {
+              // ignore parse errors, route will fall back to API lookup
+            }
 
             fetch('/api/whatsapp/connect', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 business_id: business.id,
-                access_token: accessToken,
+                code: authCode,
+                waba_id: signupMeta.waba_id,
+                phone_number_id: signupMeta.phone_number_id,
               }),
             })
               .then(async (apiRes) => {
@@ -89,6 +131,7 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
 
                 setSuccess('Your WhatsApp Business channel has been successfully tied to inFlow!');
                 if (data.business) onUpdated(data.business);
+                window.sessionStorage.removeItem('wa_embedded_signup');
               })
               .catch((err: any) => {
                 setError(err?.message || 'An error occurred during onboarding.');
@@ -102,9 +145,14 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
           }
         },
         {
-          scope: 'whatsapp_business_management,whatsapp_business_messaging,business_management',
-          auth_type: 'rerequest',
-          return_scopes: true,
+          config_id: META_CONFIG_ID,
+          response_type: 'code',
+          override_default_response_type: true,
+          extras: {
+            setup: {},
+            featureType: '',
+            sessionInfoVersion: '3',
+          },
         }
       );
     } catch (err: any) {
@@ -129,7 +177,6 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
         }
 
         const diag = data.result;
-        // If any required env is missing or supabase check failed, show details
         const missing = Object.entries(diag.env).filter(([, v]) => !v).map(([k]) => k);
         if (missing.length > 0) {
           setError(`Missing env: ${missing.join(', ')}.`);
@@ -143,7 +190,6 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
           return;
         }
 
-        // Diagnostics passed — proceed with embedded signup
         handleEmbeddedSignup();
       })
       .catch((err: any) => {
@@ -154,7 +200,6 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
 
   return (
     <>
-      {/* fb-root for SDK rendering */}
       <div id="fb-root" />
       <div className="space-y-6">
       <div>
