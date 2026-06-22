@@ -142,6 +142,9 @@ export default function PrivacyPage() {
             <p>
               To exercise any of these rights, please contact us at the contact information provided below.
             </p>
+            <p className="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <strong className="text-gray-900">South African Residents (POPIA):</strong> If you are a South African resident and believe your privacy rights under the Protection of Personal Information Act (POPIA) have been infringed, you may lodge a complaint with the South African Information Regulator at <a href="https://inforegulator.org.za" className="text-blue-600 hover:text-blue-800 font-semibold">inforegulator.org.za</a>.
+            </p>
           </section>
 
           {/* Information Sharing */}
@@ -153,13 +156,24 @@ export default function PrivacyPage() {
               We do not sell, trade, rent, or lease your personal information to third parties for marketing purposes. Your customer data remains your property and is not shared with other users or businesses without your explicit consent.
             </p>
 
-            <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-2">B. Information We Share With</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-2">B. Meta Platform Data Handling</h3>
+            <p>
+              We strictly comply with Meta Developer Policies and handle Meta Platform Data with the highest level of care and confidentiality. Meta Platform Data includes messages, user profiles, and interactions retrieved from WhatsApp Business and Instagram integration services.
+            </p>
+            <p className="mt-2">
+              <strong>Important:</strong> We use Meta Platform Data solely to provide the unified inbox service to you, our customer. We absolutely do not sell, share, rent, lease, or use Meta Platform Data for any independent marketing, tracking, or advertising purposes. This data remains under your control and is processed exclusively to deliver the communication management functionality you have authorized.
+            </p>
+            <p className="mt-2">
+              All Meta Platform Data is treated with the same security and confidentiality standards as your other personal information. Your integration with Meta platforms remains under your control, and you can disconnect or revoke permissions at any time.
+            </p>
+
+            <h3 className="text-xl font-semibold text-gray-800 mt-4 mb-2">C. Information We Share With</h3>
             <ul className="list-disc pl-6 space-y-2">
               <li>
                 <strong>Service Providers:</strong> We share data with third-party service providers who perform services on our behalf, including hosting providers, payment processors, analytics providers, and customer support platforms. These providers are contractually obligated to protect your data.
               </li>
               <li>
-                <strong>Integrated Services:</strong> If you authorize integration with third-party services (e.g., WhatsApp Business API), we share necessary data to facilitate that integration.
+                <strong>Integrated Services:</strong> If you authorize integration with third-party services (e.g., WhatsApp Business API, Instagram), we share necessary data to facilitate that integration. These integrations are performed in strict compliance with each platform's data protection and developer policies.
               </li>
               <li>
                 <strong>Legal Compliance:</strong> We may disclose information when required by law, court order, or government request, or to protect our rights, privacy, safety, or property.
@@ -218,6 +232,12 @@ export default function PrivacyPage() {
             <p>
               You can request deletion of your account and associated data at any time by contacting us. Upon deletion, we will remove your personal information from active systems, though some data may be retained in backups for a limited period or as required by law.
             </p>
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">
+              <h4 className="font-semibold text-gray-900 mb-2">Data Deletion and Meta Integration</h4>
+              <p className="text-gray-700">
+                <strong>If you wish to delete your account or request the removal of data retrieved via Meta integration (WhatsApp/Instagram), you can submit a formal deletion request at any time by emailing <a href="mailto:privacy@inflow.app" className="text-blue-600 hover:text-blue-800 font-semibold">privacy@inflow.app</a>.</strong> Upon receiving your deletion request, all connected platform data will be purged from active servers within 30 days. We will provide confirmation of data deletion upon completion.
+              </p>
+            </div>
           </section>
 
           {/* Children's Privacy */}
@@ -303,6 +323,7 @@ export default function PrivacyPage() {
               <li>General Data Protection Regulation (GDPR) - for EU residents</li>
               <li>California Consumer Privacy Act (CCPA) - for California residents</li>
               <li>Personal Information Protection and Electronic Documents Act (PIPEDA) - for Canadian residents</li>
+              <li>Protection of Personal Information Act (POPIA) - for South African residents</li>
               <li>Other applicable state and international privacy laws</li>
             </ul>
           </section>
