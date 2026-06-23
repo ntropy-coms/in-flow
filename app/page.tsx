@@ -63,7 +63,7 @@ const initialMessages: Message[] = [
   {
     id: 'm-1',
     sender: 'customer',
-    body: "Hi, I'm interested in automating my business setup and scheduling a consultation.",
+    body: "Hi! I'd like to book an appointment for a hair wash, treatment, and styling this week if you have any openings?",
     created_at: new Date().toISOString(),
   },
 ];
@@ -98,15 +98,15 @@ export default function Home() {
   function getAutoReply(outgoing: string) {
     const normalized = outgoing.toLowerCase();
     if (/(hello|hi|details)/.test(normalized)) {
-      return 'Awesome, thank you! Do you have an open slot available this Tuesday afternoon for that consultation?';
+      return 'Awesome, thank you! Do you have a free slot available this Tuesday afternoon?';
     }
     if (/(booking|scheduled|confirmed)/.test(normalized)) {
-      return 'Perfect! 16:00 on Tuesday works beautifully for me. Should I expect a voice call or a link through here?';
+      return 'Perfect! 16:00 on Tuesday works beautifully for me. See you then!';
     }
     if (/(invoice|payment|r250)/.test(normalized)) {
-      return "Received, thank you! I'll process the payment right away and let you know when it goes through.";
+      return "Got the summary, thank you! I'll see you on Tuesday and settle up right after.";
     }
-    return 'Sounds good, thanks for confirming! What are the next steps to get everything finalized on your end?';
+    return 'Sounds good, thanks for confirming! Let me know what the next steps are.';
   }
 
   function scheduleAutoReply(outgoing: string) {
@@ -236,7 +236,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex-shrink-0 border-t border-zinc-200 bg-white px-4 py-4">
-                  <div className="flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2">
+                  <div className="flex flex-row items-center justify-between w-full gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-full">
                     <input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
@@ -252,7 +252,7 @@ export default function Home() {
                     <button
                       onClick={handleSend}
                       disabled={!input.trim()}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex h-9 w-9 items-center justify-center flex-shrink-0 rounded-full bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ArrowRight size={18} />
                     </button>
