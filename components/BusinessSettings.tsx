@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Instagram, Facebook, MessageSquare, MessageCircle } from 'lucide-react';
 import { supabase, Business } from '@/lib/supabase';
 
 interface Props {
@@ -198,88 +199,149 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
       });
   };
 
+  const CHANNELS = [
+    {
+      id: 'whatsapp',
+      name: 'WhatsApp',
+      Icon: MessageSquare,
+      description: 'Link your WhatsApp Business profile via Meta Secure OAuth.',
+      isActive: true,
+    },
+    {
+      id: 'instagram',
+      name: 'Instagram DM',
+      Icon: Instagram,
+      description: 'Manage your professional Instagram direct messages and automations.',
+      isActive: false,
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook Business',
+      Icon: Facebook,
+      description: 'Sync your company Facebook Page conversations directly into your inbox.',
+      isActive: false,
+    },
+    {
+      id: 'sms',
+      name: 'SMS Gateway',
+      Icon: MessageCircle,
+      description: 'Connect your local SMS integration to send native text notifications.',
+      isActive: false,
+    },
+  ];
+
   return (
     <>
       <div id="fb-root" />
-      <div className="space-y-6">
-      <div>
-        <h3 className="text-sm font-bold text-zinc-900">WhatsApp Integration</h3>
-        <p className="text-sm text-zinc-600 mt-2">
-          Link your WhatsApp Business profile seamlessly via Meta Secure OAuth.
-        </p>
-      </div>
-
-      <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch gap-3">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-zinc-900">Status</p>
-            <p className="text-xs text-zinc-500 mt-1 truncate">
-              {business.whatsapp_phone_number_id 
-                ? `Connected to ${business.whatsapp_number}` 
-                : 'Not integrated'}
-            </p>
-          </div>
-          <div className="flex gap-2 items-center sm:items-stretch">
-            <button
-              onClick={attemptConnectWithDiagnostics}
-              disabled={loading}
-              className="rounded-lg bg-amber-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors min-h-[44px]"
-            >
-              {loading ? 'Connecting...' : business.whatsapp_phone_number_id ? 'Reconnect Channel' : 'Connect WhatsApp'}
-            </button>
-            <button
-              onClick={attemptConnectWithDiagnostics}
-              disabled={loading}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 min-h-[44px]"
-            >
-              Retry
-            </button>
-            <button
-              onClick={() => setShowTroubleshoot(true)}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50 min-h-[44px]"
-            >
-              Troubleshoot
-            </button>
-          </div>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-bold text-zinc-900">Connected Channels</h3>
+          <p className="text-sm text-zinc-600 mt-1">Manage platform channels that can be connected to your inFlow account.</p>
         </div>
 
-        {error && <p className="text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">{error}</p>}
-        {success && <p className="text-xs text-emerald-600 bg-emerald-50 p-3 rounded-lg border border-emerald-200">{success}</p>}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {CHANNELS.map(({ id, name, Icon, description, isActive }) => {
+            const activeClass = isActive ? 'opacity-100' : 'opacity-60 border-zinc-100';
+            return (
+              <div key={id} className={`bg-white border ${isActive ? 'border-zinc-200' : 'border-zinc-100'} rounded-lg p-4 flex flex-col gap-3 ${activeClass}`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isActive ? 'bg-amber-50 text-amber-600' : 'bg-zinc-50 text-zinc-500'}`}>
+                    <Icon size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">{name}</p>
+                      {!isActive && (
+                        <span className="text-[10px] px-2 py-1 bg-zinc-50 border border-zinc-100 rounded-full text-zinc-500">Coming Soon</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-1 truncate">{description}</p>
+                  </div>
+                </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
-        <p className="text-xs font-semibold text-zinc-900">How it works</p>
-        <ul className="mt-3 space-y-2 text-xs text-zinc-600 list-disc list-inside">
-          <li>Authenticate your official business account via Meta's dialog securely.</li>
-          <li>Select the specific active WhatsApp phone number you want to track.</li>
-          <li>Inbound client messages will stream natively into your inFlow smart inbox.</li>
-        </ul>
-      </div>
-      {showTroubleshoot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
-          <div className="w-[90%] max-w-lg rounded-lg bg-white border border-zinc-200 p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h4 className="text-sm font-bold text-zinc-900">WhatsApp Troubleshooting</h4>
-                <p className="text-xs text-zinc-500 mt-1">Steps to resolve common connection issues.</p>
+                {isActive ? (
+                  <>
+                    <div className="bg-white border border-zinc-100 rounded-lg p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row items-stretch gap-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-zinc-900">Status</p>
+                          <p className="text-xs text-zinc-500 mt-1 truncate">
+                            {business.whatsapp_phone_number_id ? `Connected to ${business.whatsapp_number}` : 'Not integrated'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 items-center sm:items-stretch">
+                          <button
+                            onClick={attemptConnectWithDiagnostics}
+                            disabled={loading}
+                            className="rounded-lg bg-amber-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors min-h-[44px]"
+                          >
+                            {loading ? 'Connecting...' : business.whatsapp_phone_number_id ? 'Reconnect Channel' : 'Connect WhatsApp'}
+                          </button>
+                          <button
+                            onClick={attemptConnectWithDiagnostics}
+                            disabled={loading}
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 min-h-[44px]"
+                          >
+                            Retry
+                          </button>
+                          <button
+                            onClick={() => setShowTroubleshoot(true)}
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50 min-h-[44px]"
+                          >
+                            Troubleshoot
+                          </button>
+                        </div>
+                      </div>
+
+                      {error && <p className="text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">{error}</p>}
+                      {success && <p className="text-xs text-emerald-600 bg-emerald-50 p-3 rounded-lg border border-emerald-200">{success}</p>}
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                      <p className="text-xs font-semibold text-zinc-900">How it works</p>
+                      <ul className="mt-2 space-y-1 text-xs text-zinc-600 list-disc list-inside">
+                        <li>Authenticate your official business account via Meta's dialog securely.</li>
+                        <li>Select the specific active WhatsApp phone number you want to track.</li>
+                        <li>Inbound client messages will stream natively into your inFlow smart inbox.</li>
+                      </ul>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-end">
+                    <button className="rounded-lg border border-zinc-200 px-4 py-2.5 text-xs text-zinc-400 bg-zinc-50 cursor-not-allowed min-h-[44px]" disabled>
+                      Unavailable in Dev Mode
+                    </button>
+                  </div>
+                )}
               </div>
-              <button onClick={() => setShowTroubleshoot(false)} className="text-zinc-400 hover:text-zinc-600">✕</button>
-            </div>
+            );
+          })}
+        </div>
 
-            <ol className="mt-4 space-y-2 text-xs text-zinc-700 list-decimal list-inside">
-              <li>Allow popups and redirects for this site in your browser.</li>
-              <li>Make sure third-party cookies are enabled or try in a private window.</li>
-              <li>Check that your Meta app ID (NEXT_PUBLIC_META_APP_ID) is configured and correct.</li>
-              <li>If using browser extensions, temporarily disable blockers that may interfere.</li>
-              <li>Try again with the <strong>Retry</strong> button after applying the steps above.</li>
-            </ol>
+        {showTroubleshoot && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/10">
+            <div className="w-[90%] max-w-lg rounded-lg bg-white border border-zinc-200 p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-900">WhatsApp Troubleshooting</h4>
+                  <p className="text-xs text-zinc-500 mt-1">Steps to resolve common connection issues.</p>
+                </div>
+                <button onClick={() => setShowTroubleshoot(false)} className="text-zinc-400 hover:text-zinc-600">✕</button>
+              </div>
 
-            <div className="mt-6 flex justify-end gap-2">
-              <button onClick={() => setShowTroubleshoot(false)} className="rounded-lg px-4 py-2 text-xs border border-zinc-300 text-zinc-700 hover:bg-zinc-50">Done</button>
+              <ol className="mt-4 space-y-2 text-xs text-zinc-700 list-decimal list-inside">
+                <li>Allow popups and redirects for this site in your browser.</li>
+                <li>Make sure third-party cookies are enabled or try in a private window.</li>
+                <li>Check that your Meta app ID (NEXT_PUBLIC_META_APP_ID) is configured and correct.</li>
+                <li>If using browser extensions, temporarily disable blockers that may interfere.</li>
+                <li>Try again with the <strong>Retry</strong> button after applying the steps above.</li>
+              </ol>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <button onClick={() => setShowTroubleshoot(false)} className="rounded-lg px-4 py-2 text-xs border border-zinc-300 text-zinc-700 hover:bg-zinc-50">Done</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </>
   );
