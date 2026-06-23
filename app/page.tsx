@@ -1,60 +1,115 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { FileText, CalendarCheck, Calculator, ShoppingBag } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ArrowLeft,
+  Calculator,
+  CalendarCheck,
+  Facebook,
+  FileText,
+  Instagram,
+  MessageCircle,
+  MessageSquare,
+  ShoppingBag,
+} from 'lucide-react';
+
+const CHANNELS = [
+  {
+    id: 'whatsapp',
+    name: 'WhatsApp',
+    Icon: MessageSquare,
+    description: 'Link your WhatsApp Business profile via Meta Secure OAuth.',
+    isActive: true,
+  },
+  {
+    id: 'instagram',
+    name: 'Instagram DM',
+    Icon: Instagram,
+    description: 'Manage your professional Instagram direct messages and automations.',
+    isActive: false,
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook Business',
+    Icon: Facebook,
+    description: 'Sync your company Facebook Page conversations directly into your inbox.',
+    isActive: false,
+  },
+  {
+    id: 'sms',
+    name: 'SMS Gateway',
+    Icon: MessageCircle,
+    description: 'Connect your local SMS integration to send native text notifications.',
+    isActive: false,
+  },
+];
+
+const TOOL_ACTIONS = [
+  {
+    label: 'Invoice',
+    text: '📄 Invoice Generated: #INV-2026-001 — Total: R250.00. Click to view.',
+  },
+  {
+    label: 'BookedIt',
+    text: '📅 Consultation Confirmed: Tuesday at 16:00. Looking forward to speaking with you!',
+  },
+  {
+    label: 'Quote',
+    text: '🛠️ Quote Details: Basic Diagnostics & Labour — Total: R750.00',
+  },
+  {
+    label: 'Menu',
+    text: '🍔 Order Summary: 1x Quarter Leg & Chips (R55). Processing order now.',
+  },
+];
+
+type Message = {
+  id: string;
+  sender: 'business' | 'customer';
+  body: string;
+  created_at: string;
+};
 
 export default function Home() {
-  // Mock conversation state for demo
-  const [conversations, setConversations] = useState(() => [
+  const [currentScreen, setCurrentScreen] = useState<'list' | 'chat'>('list');
+  const [messages, setMessages] = useState<Message[]>([
     {
-      id: 'mock-1',
-      name: 'Customer One (WhatsApp Test)',
-      updated_at: new Date().toISOString(),
-      last_message: "Hi, I'm interested in automating my business setup and scheduling a consultation.",
-      messages: [
-        {
-          id: 'm-in-1',
-          sender: 'customer',
-          body: "Hi, I'm interested in automating my business setup and scheduling a consultation.",
-          created_at: new Date().toISOString(),
-        },
-      ],
+      id: 'm-in-1',
+      sender: 'customer',
+      body: "Hi, I'm interested in automating my business setup and scheduling a consultation.",
+      created_at: new Date().toISOString(),
     },
   ]);
-
-  const [activeId, setActiveId] = useState('mock-1');
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const replyTimer = useRef<number | null>(null);
 
-  function appendMessage(text: string, from: 'business' | 'customer' = 'business') {
-    setConversations((prev) => {
-      return prev.map((c) => {
-        if (c.id !== activeId) return c;
-        const msg = {
-          id: `m-${Date.now()}`,
-          sender: from === 'business' ? 'business' : 'customer',
-          body: text,
-          created_at: new Date().toISOString(),
-        };
-        return {
-          ...c,
-          messages: [...c.messages, msg],
-          last_message: text,
-          updated_at: new Date().toISOString(),
-        };
-      });
-    });
-    window.setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+  function scrollToBottom() {
+    window.setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  }
+
+  function appendMessage(text: string, sender: 'business' | 'customer' = 'business') {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `m-${Date.now()}`,
+        sender,
+        body: text,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+    scrollToBottom();
   }
 
   function getAutoReply(outgoing: string) {
     const normalized = outgoing.toLowerCase();
-    if (/\b(hello|hi|help you|details)\b/.test(normalized)) {
+    if (/\b(hello|hi|details)\b/.test(normalized)) {
       return 'Awesome, thank you! Do you have an open slot available this Tuesday afternoon for that consultation?';
     }
     if (/\b(booking|scheduled|confirmed)\b/.test(normalized)) {
-      return 'Perfect! R16:00 on Tuesday works beautifully for me. Should I expect a voice call or a link through here?';
+      return 'Perfect! 16:00 on Tuesday works beautifully for me. Should I expect a voice call or a link through here?';
     }
     if (/\b(invoice|payment|r250)\b/.test(normalized)) {
       return "Received, thank you! I'll process the payment right away and let you know when it goes through.";
@@ -82,82 +137,104 @@ export default function Home() {
   }, []);
 
   function handleSend() {
-    if (!input.trim()) return;
     const outgoing = input.trim();
+    if (!outgoing) return;
     appendMessage(outgoing, 'business');
     setInput('');
     scheduleAutoReply(outgoing);
   }
 
-  // Plugin output handler
   function handlePluginAction(text: string) {
     appendMessage(text, 'business');
     scheduleAutoReply(text);
   }
 
-  const activeConv = conversations.find((c) => c.id === activeId)!;
-
   return (
     <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white">
-      {/* Header */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
               <span className="text-white text-xs font-bold">iF</span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-900">inFlow (Demo)</p>
-              <p className="text-xs text-zinc-500">Meta App Review sandbox</p>
+              <p className="text-sm font-semibold text-zinc-900">inFlow Demo Sandbox</p>
+              <p className="text-[11px] text-zinc-500">Meta App Review recording mode</p>
             </div>
           </div>
+          <div className="hidden md:flex items-center gap-2 text-xs text-zinc-500">
+            <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">Client-side mock</span>
+          </div>
         </div>
-        {/* Top tool menu (static, scrollable) */}
-        <div className="flex-shrink-0 w-full overflow-x-auto whitespace-nowrap scrollbar-none flex flex-row items-center gap-2 px-3 py-2 bg-white border-b border-zinc-200">
-          <button onClick={() => handlePluginAction('📄 Invoice Generated: #INV-2026-001 — Total: R250.00. Click to view.')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-zinc-200 text-sm text-zinc-700"> <FileText size={16} /> Invoice</button>
-          <button onClick={() => handlePluginAction('📅 Consultation Confirmed: Tuesday at 16:00. Looking forward to speaking with you!')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-zinc-200 text-sm text-zinc-700"> <CalendarCheck size={16} /> BookedIt</button>
-          <button onClick={() => handlePluginAction('🛠️ Quote Details: Basic Diagnostics & Labour — Total: R750.00')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-zinc-200 text-sm text-zinc-700"> <Calculator size={16} /> Quote</button>
-          <button onClick={() => handlePluginAction('🍔 Order Summary: 1x Quarter Leg & Chips (R55). Processing order now.')} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-zinc-200 text-sm text-zinc-700"> <ShoppingBag size={16} /> Menu</button>
+        <div className="flex-shrink-0 w-full overflow-x-auto whitespace-nowrap scrollbar-none flex flex-row items-center border-b bg-white z-10 px-3 py-2">
+          {TOOL_ACTIONS.map((tool) => (
+            <button
+              key={tool.label}
+              onClick={() => handlePluginAction(tool.text)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:border-amber-300"
+            >
+              {tool.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Main content: sidebar + conversation + tools area */}
-      <div className="flex-1 min-h-0 md:flex-row flex-col pt-0">
-        {/* Sidebar */}
-        <div className="min-h-0 w-full md:w-1/4 md:min-w-[240px] border-r border-zinc-100 bg-white">
-          <div className="p-3 border-b border-zinc-200">
-            <input placeholder="Search conversations..." className="w-full bg-zinc-50 rounded-lg px-3 py-2 text-sm outline-none border border-zinc-200" />
+      <div className="flex-1 overflow-hidden md:flex">
+        <div className={`${currentScreen === 'chat' ? 'hidden md:flex' : 'flex'} flex-col overflow-hidden md:w-80 border-r border-zinc-100 bg-white`}>
+          <div className="flex-shrink-0 p-3 border-b border-zinc-200">
+            <input
+              type="search"
+              placeholder="Search conversations..."
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 outline-none"
+            />
           </div>
           <div className="flex-1 overflow-y-auto">
-            {conversations.map((c) => (
-              <button key={c.id} onClick={() => setActiveId(c.id)} className={`w-full flex items-center gap-3 px-4 py-3 border-b border-zinc-100 text-left ${activeId === c.id ? 'bg-zinc-50 border-l-4 border-l-amber-600' : ''}`}>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white font-bold">C1</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-zinc-900 truncate">{c.name}</span>
-                    <span className="text-[10px] text-zinc-500">now</span>
-                  </div>
-                  <p className="text-xs text-zinc-600 truncate mt-1">{c.last_message}</p>
+            <button
+              onClick={() => setCurrentScreen('chat')}
+              className="w-full text-left border-b border-zinc-100 px-4 py-4 hover:bg-zinc-50"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-white font-bold">C1</div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-zinc-900">Customer One (WhatsApp Test)</p>
+                  <p className="text-xs text-zinc-500 mt-1">Tap to open chat</p>
                 </div>
-              </button>
-            ))}
+              </div>
+            </button>
           </div>
         </div>
 
-        {/* Conversation panel */}
-        <div className="w-full flex-1 min-h-0 flex flex-col md:w-2/4">
-          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-200 bg-white">
-            <p className="text-sm font-semibold text-zinc-900">{activeConv.name}</p>
-            <p className="text-xs text-zinc-500">+{activeConv.id}</p>
+        <div className={`${currentScreen === 'list' ? 'hidden md:flex' : 'flex'} flex-1 flex-col overflow-hidden`}>
+          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-200 bg-white md:flex md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCurrentScreen('list')}
+                className="inline-flex items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-600 md:hidden"
+              >
+                <ArrowLeft size={14} /> Back
+              </button>
+              <div>
+                <p className="text-sm font-semibold text-zinc-900">Customer One (WhatsApp Test)</p>
+                <p className="text-xs text-zinc-500">WhatsApp demo conversation</p>
+              </div>
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto w-full px-4 py-2 pb-40 max-w-full">
-            <div className="flex flex-col gap-3 mt-4">
-              {activeConv.messages.map((m: any) => (
-                <div key={m.id} className={`flex ${m.sender === 'business' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`${m.sender === 'business' ? 'bg-amber-600 text-white rounded-br-none' : 'bg-white border border-zinc-200 text-zinc-900 rounded-bl-none'} max-w-[85%] px-3 py-2 rounded-lg text-sm`}> 
-                    <p>{m.body}</p>
-                    <p className={`text-[10px] mt-1 ${m.sender === 'business' ? 'text-amber-100' : 'text-zinc-500'} text-right`}>{new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
+          <div className="flex-1 overflow-y-auto w-full px-4 py-2">
+            <div className="flex flex-col gap-3 mt-2">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.sender === 'business' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[85%] rounded-3xl px-4 py-3 text-sm leading-relaxed ${
+                      message.sender === 'business'
+                        ? 'bg-amber-600 text-white rounded-br-none'
+                        : 'bg-zinc-100 text-zinc-900 rounded-bl-none border border-zinc-200'
+                    }`}
+                  >
+                    <p>{message.body}</p>
+                    <p className={`mt-2 text-[10px] text-right ${message.sender === 'business' ? 'text-amber-100' : 'text-zinc-500'}`}>
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -165,42 +242,105 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Input area */}
-          <div className="sticky bottom-16 left-0 right-0 z-20 p-4 border-t border-zinc-200 bg-white">
+          <div className="w-full flex-shrink-0 border-t border-zinc-200 bg-white px-4 py-3">
             <div className="flex flex-col gap-3">
-              <div className="flex items-end gap-2 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                <textarea rows={1} placeholder="Type a reply..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} className="flex-1 bg-transparent text-sm text-zinc-900 placeholder-zinc-400 outline-none resize-none max-h-32" />
-                <button onClick={handleSend} disabled={!input.trim()} className="w-8 h-8 rounded-lg bg-amber-600 hover:bg-amber-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+              <div className="flex items-end gap-2 rounded-3xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                <textarea
+                  rows={1}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder="Type a reply..."
+                  className="flex-1 resize-none bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim()}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-600 text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Send
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:hidden">
-                <button onClick={() => handlePluginAction('📄 Invoice Generated: #INV-2026-001 — Total: R250.00. Click to view.')} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">Invoice</button>
-                <button onClick={() => handlePluginAction('📅 Consultation Confirmed: Tuesday at 16:00. Looking forward to speaking with you!')} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">BookedIt</button>
-                <button onClick={() => handlePluginAction('🛠️ Quote Details: Basic Diagnostics & Labour — Total: R750.00')} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">Quote</button>
-                <button onClick={() => handlePluginAction('🍔 Order Summary: 1x Quarter Leg & Chips (R55). Processing order now.')} className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">Menu</button>
+                {TOOL_ACTIONS.map((tool) => (
+                  <button
+                    key={tool.label}
+                    onClick={() => handlePluginAction(tool.text)}
+                    className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700"
+                  >
+                    {tool.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tools/Plugins side (show plugin-like info) */}
-        <div className="min-h-0 w-full md:w-1/4 md:min-w-[280px] border-l border-zinc-100 bg-white p-4">
-          <p className="text-sm font-semibold text-zinc-900">Tools</p>
-          <div className="mt-3 space-y-3">
-            <button onClick={() => handlePluginAction('📄 Invoice Generated: #INV-2026-001 — Total: R250.00. Click to view.')} className="w-full text-left rounded-lg border border-zinc-200 px-3 py-2 text-sm">Generate Invoice</button>
-            <button onClick={() => handlePluginAction('📅 Consultation Confirmed: Tuesday at 16:00. Looking forward to speaking with you!')} className="w-full text-left rounded-lg border border-zinc-200 px-3 py-2 text-sm">Send Booking</button>
-            <button onClick={() => handlePluginAction('🛠️ Quote Details: Basic Diagnostics & Labour — Total: R750.00')} className="w-full text-left rounded-lg border border-zinc-200 px-3 py-2 text-sm">Send Quote</button>
-            <button onClick={() => handlePluginAction('🍔 Order Summary: 1x Quarter Leg & Chips (R55). Processing order now.')} className="w-full text-left rounded-lg border border-zinc-200 px-3 py-2 text-sm">Send Order</button>
+        <div className="hidden md:flex md:w-96 md:flex-col border-l border-zinc-100 bg-white">
+          <div className="p-4 border-b border-zinc-200">
+            <h3 className="text-sm font-semibold text-zinc-900">Tools & channels</h3>
+            <p className="mt-2 text-xs text-zinc-500">Use these actions to demonstrate multi-channel workflow.</p>
+          </div>
+          <div className="p-4 space-y-3">
+            {TOOL_ACTIONS.map((tool) => (
+              <button
+                key={tool.label}
+                onClick={() => handlePluginAction(tool.text)}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm font-semibold text-zinc-900 transition hover:border-amber-300"
+              >
+                {tool.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500">Connected channels</p>
+              </div>
+              {CHANNELS.map((channel) => (
+                <div
+                  key={channel.id}
+                  className={`rounded-3xl border px-4 py-4 ${channel.isActive ? 'border-zinc-200 bg-white' : 'border-zinc-100 bg-zinc-50 opacity-70'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-2xl flex items-center justify-center ${channel.isActive ? 'bg-amber-50 text-amber-600' : 'bg-zinc-100 text-zinc-500'}`}>
+                      <channel.Icon size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900">{channel.name}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{channel.description}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {channel.isActive ? (
+                      <>
+                        <button className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">Connect WhatsApp</button>
+                        <button className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">Retry</button>
+                        <button className="rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700">Troubleshoot</button>
+                      </>
+                    ) : (
+                      <span className="rounded-full bg-zinc-100 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Coming Soon</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Fixed bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white border-t flex flex-row items-center justify-around">
-        <button className="text-sm text-zinc-700">Chats</button>
-        <button className="text-sm text-zinc-700">Conversation</button>
-        <button className="text-sm text-zinc-700">Tools</button>
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-zinc-200 bg-white px-4 md:hidden">
+        <button onClick={() => setCurrentScreen('list')} className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${currentScreen === 'list' ? 'bg-amber-100 text-amber-900' : 'text-zinc-600'}`}>
+          Chats
+        </button>
+        <button onClick={() => setCurrentScreen('chat')} className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${currentScreen === 'chat' ? 'bg-amber-100 text-amber-900' : 'text-zinc-600'}`}>
+          Conversation
+        </button>
       </div>
     </div>
   );
