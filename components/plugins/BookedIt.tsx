@@ -74,7 +74,7 @@ export default function BookedIt({ activeChat }: BookedItProps) {
         Today&apos;s slots — tap an available slot to select it
       </p>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-full">
         {SLOTS.map((slot) => {
           const isBooked = booked.has(slot);
           const isSelected = selected === slot;
@@ -83,7 +83,7 @@ export default function BookedIt({ activeChat }: BookedItProps) {
               key={slot}
               onClick={() => toggleSlot(slot)}
               disabled={isBooked}
-              className={`py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`w-full py-2.5 rounded-lg text-xs font-semibold transition-colors ${
                 isBooked
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-300 cursor-default'
                   : isSelected
@@ -104,7 +104,7 @@ export default function BookedIt({ activeChat }: BookedItProps) {
       </div>
 
       {selected && activeChat && (
-        <div className="bg-zinc-50 rounded-lg p-3 border border-amber-200 text-xs text-zinc-700">
+        <div className="bg-zinc-50 rounded-lg p-3 border border-amber-200 text-xs text-zinc-700 w-full max-w-full">
           <span className="text-amber-600 font-medium">Draft:</span> Appointment at {selected}
         </div>
       )}

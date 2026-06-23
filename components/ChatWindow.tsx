@@ -114,9 +114,9 @@ export default function ChatWindow({ activeChat }: ChatWindowProps) {
 
   if (!activeChat) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-zinc-50 gap-4 text-zinc-400">
-        <MessageSquare size={48} />
-        <p className="text-sm">Select a conversation to begin</p>
+      <div className="w-full flex flex-col items-center justify-center text-center p-6 h-full min-h-[50dvh]">
+        <MessageSquare size={56} strokeWidth={2} className="text-zinc-300 mb-4" />
+        <p className="text-sm text-zinc-600">Select a conversation to begin</p>
       </div>
     );
   }

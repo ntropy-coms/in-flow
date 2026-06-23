@@ -76,37 +76,37 @@ export default function MenuDrop({ activeChat }: MenuDropProps) {
         <h3 className="text-sm font-bold text-zinc-900">MenuDrop</h3>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-full">
         {MENU_ITEMS.map((item) => {
           const qty = quantities[item.id] ?? 0;
           return (
             <div
               key={item.id}
-              className="flex items-center justify-between bg-white border border-zinc-200 rounded-lg px-3 py-2.5"
+              className="flex items-center justify-between bg-white border border-zinc-200 rounded-lg px-3 py-2.5 w-full max-w-full"
             >
-              <div>
-                <p className="text-xs font-medium text-zinc-900">{item.name}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-zinc-900 truncate">{item.name}</p>
                 <p className="text-[10px] text-zinc-600">R{item.price}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {qty > 0 && (
                   <button
                     onClick={() => adjust(item.id, -1)}
-                    className="w-6 h-6 rounded-md bg-zinc-200 hover:bg-zinc-300 flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-md bg-zinc-200 hover:bg-zinc-300 flex items-center justify-center transition-colors"
                   >
-                    <Minus size={10} className="text-zinc-700" />
+                    <Minus size={12} className="text-zinc-700" />
                   </button>
                 )}
                 {qty > 0 && (
-                  <span className="text-xs text-amber-600 font-bold w-4 text-center">
+                  <span className="text-sm text-amber-600 font-bold w-6 text-center">
                     {qty}
                   </span>
                 )}
                 <button
                   onClick={() => adjust(item.id, 1)}
-                  className="w-6 h-6 rounded-md bg-amber-600 hover:bg-amber-700 flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-md bg-amber-600 hover:bg-amber-700 flex items-center justify-center transition-colors flex-shrink-0"
                 >
-                  <Plus size={10} className="text-white" />
+                  <Plus size={12} className="text-white" />
                 </button>
               </div>
             </div>

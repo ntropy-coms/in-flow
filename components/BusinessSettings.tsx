@@ -210,34 +210,33 @@ export default function BusinessSettings({ business, onUpdated }: Props) {
       </div>
 
       <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col sm:flex-row items-stretch gap-3">
+          <div className="flex-1">
             <p className="text-sm font-medium text-zinc-900">Status</p>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-zinc-500 mt-1 truncate">
               {business.whatsapp_phone_number_id 
                 ? `Connected to ${business.whatsapp_number}` 
                 : 'Not integrated'}
             </p>
           </div>
-          
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2 items-center sm:items-stretch">
             <button
               onClick={attemptConnectWithDiagnostics}
               disabled={loading}
-              className="rounded-lg bg-amber-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-amber-600 px-4 py-2.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 transition-colors min-h-[44px]"
             >
               {loading ? 'Connecting...' : business.whatsapp_phone_number_id ? 'Reconnect Channel' : 'Connect WhatsApp'}
             </button>
             <button
               onClick={attemptConnectWithDiagnostics}
               disabled={loading}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 min-h-[44px]"
             >
               Retry
             </button>
             <button
               onClick={() => setShowTroubleshoot(true)}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50"
+              className="rounded-lg border border-zinc-300 px-3 py-2 text-xs text-zinc-600 hover:bg-zinc-50 min-h-[44px]"
             >
               Troubleshoot
             </button>
