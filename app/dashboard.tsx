@@ -148,17 +148,24 @@ export default function Dashboard() {
   async function handleSignOut() {
     setIsSigningOut(true);
     try {
-      await fetch('/api/auth/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      router.push('/');
+
+      if (!response.ok) {
+        throw new Error(`Logout failed: ${response.status}`);
+      }
+
+      // Force a hard page reload to clear client-side state
+      window.location.href = '/';
     } catch (err) {
       console.error('Sign out failed:', err);
       setIsSigningOut(false);
+      alert('Failed to sign out. Please try again.');
     }
   }
 
