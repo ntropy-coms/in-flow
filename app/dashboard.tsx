@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   ArrowRight,
+  LogOut,
   MessageSquare,
   Settings,
   Smartphone,
@@ -69,10 +71,12 @@ const initialMessages: Message[] = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter();
   const [globalTab, setGlobalTab] = useState<GlobalTab>('chats');
   const [showThread, setShowThread] = useState(false);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const replyTimer = useRef<number | null>(null);
 
@@ -141,6 +145,23 @@ export default function Dashboard() {
     scheduleAutoReply(text);
   }
 
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      router.push('/');
+    } catch (err) {
+      console.error('Sign out failed:', err);
+      setIsSigningOut(false);
+    }
+  }
+
   return (
     <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white">
       {/* Header */}
@@ -150,8 +171,19 @@ export default function Dashboard() {
             <p className="text-sm font-semibold text-zinc-900">inFlow</p>
             <p className="text-xs text-zinc-500">Production Dashboard</p>
           </div>
-          <div className="hidden md:flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            Authenticated
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              Authenticated
+            </div>
+            <button
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              className="flex items-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs font-semibold text-white transition disabled:opacity-50"
+              title="Sign out"
+            >
+              <LogOut size={14} />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
         </div>
 
